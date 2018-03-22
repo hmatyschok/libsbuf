@@ -40,16 +40,16 @@
 
 #include "sbuf.h"
 
+#define	KASSERT(e, m)
+#define	SBMALLOC(size)		calloc(1, size)
+#define	SBFREE(buf)		free(buf)
+
 /* 
  * See sys/param.h from FreeBSD 11{.x}
  * 
  *  if y is powers of two 
  */
 #define	roundup2(x, y)	(((x)+((y)-1))&(~((y)-1))) 
-
-#define	KASSERT(e, m)
-#define	SBMALLOC(size)		calloc(1, size)
-#define	SBFREE(buf)		free(buf)
 
 /*
  * Predicates
@@ -72,25 +72,18 @@
 #define	SBUF_MINSIZE		 2		/* Min is 1 byte + nulterm. */
 #define	SBUF_MINEXTENDSIZE	16		/* Should be power of 2. */
 
-#ifdef PAGE_SIZE
-#define	SBUF_MAXEXTENDSIZE	PAGE_SIZE
-#define	SBUF_MAXEXTENDINCR	PAGE_SIZE
-#else
-#define	SBUF_MAXEXTENDSIZE	4096
-#define	SBUF_MAXEXTENDINCR	4096
-#endif
+static int 	sbuf_extendsize(int);
+static int 	sbuf_extend(struct sbuf *, int);
+static struct sbuf * 	sbuf_newbuf(struct sbuf *, char *, int, int);
+static int 	sbuf_drain(struct sbuf *);
+static void 	sbuf_put_bytes(struct sbuf *, const char *, size_t);
+static void 	sbuf_put_byte(struct sbuf *, char);
 
 /*
  * Debugging support
  */
 #define	assert_sbuf_integrity(s) do { } while (0)
 #define	assert_sbuf_state(s, i)	 do { } while (0)
-
-
-#ifdef CTASSERT
-CTASSERT(powerof2(SBUF_MAXEXTENDSIZE));
-CTASSERT(powerof2(SBUF_MAXEXTENDINCR));
-#endif
 
 static int
 sbuf_extendsize(int size)
