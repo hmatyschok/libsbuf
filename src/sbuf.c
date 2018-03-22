@@ -38,8 +38,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-#include "netif_sbuf.h"
+#include "sbuf.h"
 
 /* 
  * See sys/param.h from FreeBSD 11{.x}
